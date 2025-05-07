@@ -24,45 +24,131 @@
     a {
       color: #0077cc;
     }
+    .qa-block {
+      margin-bottom: 2em;
+    }
   </style>
 </head>
 <body>
   <h1>🩺 指甲病變 AI 辨識系統（NDD 專案）</h1>
 
   <div class="section">
-    <h2>🎯 專案簡介</h2>
+    <h2>設計概念</h2>
+    <ul>
+      <li>幫助使用者初步判斷指甲病變情況</li>
+      <li>減少延遲就醫時間，提高治療效率</li>
+      <li>針對不方便就醫或想先評估風險的一般用戶</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>專案簡介</h2>
     <p>本專案針對指甲病變圖片進行分類，透過 YOLOv8 Nano 自動裁切指甲區域，接著使用 EfficientNetV2 + CBAM 模型進行病變判別，結果透過 LineBot 回傳診斷與建議。</p>
   </div>
 
   <div class="section">
-    <h2>📸 LineBot 體驗入口</h2>
+    <h2>LineBot 體驗入口</h2>
     <img class="qr" src="qr_ndd.png" alt="NDD 專案 QR Code">
     <p>→ 掃描上方 QR Code，體驗 LineBot 指甲分類與建議流程。</p>
   </div>
 
   <div class="section">
-    <h2>🧰 使用技術</h2>
+    <h2>使用技術</h2>
     <ul>
       <li>指甲偵測模型：YOLOv8 Nano</li>
       <li>病變分類模型：EfficientNetV2 + CBAM</li>
-      <li>模型訓練框架：PyTorch（轉換為 ONNX 格式）</li>
-      <li>部署：FastAPI（實際推論仍使用 PyTorch 模型）</li>
+      <li>模型訓練框架：PyTorch</li>
+      <li>佈署：FastAPI + MySQL，架設於 AWS EC2 / RDS</li>
       <li>UI：LineBot + FlexMessage</li>
-      <li>資料庫：AWS RDS (MySQL)</li>
     </ul>
   </div>
 
   <div class="section">
-    <h2>📈 成效亮點</h2>
+    <h2>成效亮點</h2>
     <ul>
-      <li>分類準確率：約 90%（含混淆矩陣與 CAM 驗證）</li>
-      <li>YOLOv8 裁切平均耗時 < 200ms，推論總時間 < 1.5 秒</li>
+      <li>分類準確率：約 86%</li>
+      <li>YOLOv8 裁切平均耗時 < 200ms，推論總時間 1.5 秒</li>
       <li>資料記錄可擴充為個人診斷歷史與追蹤系統</li>
     </ul>
   </div>
 
   <div class="section">
-    <h2>🔗 返回主頁</h2>
+    <h2>未來可擴展性</h2>
+    <ul>
+      <li>專案商業化後可再加入附近診所導航功能</li>
+      <li>取得用戶同意後可以建立個人病歷紀錄追蹤變化</li>
+      <li>擴充應用範圍至皮膚病變、傷口照護等外觀醫療辨識</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>開發歷程</h2>
+    <ul>
+      <div class="qa-block">
+        <li><strong>問題：</strong>資料收集階段時發現現有包含健康指甲的21種照片中，有15種較罕見的病變照片數量小於30張</li>
+        <li><strong>解決方式：</strong>將15種罕見病變整合成少見特殊病變分類，並將就醫科別指定為這15種病變較常看診的皮膚科</li>
+      </div>
+      <div class="qa-block">
+        <li><strong>問題：</strong>整合後的七種類別的資料數量不平衡，模型傾向選擇數量多的常見病變而不是數量少的罕見病變</li>
+        <li><strong>解決方式：</strong>使用 Focal Loss 對少數類別加大權重，減少多數類別主導 loss 的情況</li>
+      </div>
+      <div class="qa-block">
+        <li><strong>問題：</strong>為了再向上提升模型準確率，需確認模型是否真的辨識到正確區域</li>
+        <li><strong>解決方式：</strong>透過 Score-CAM 顯示模型關注的區域，確認其判斷是基於指甲病變，而不是手指背景</li>
+      </div>
+      <div class="section">
+        <p>Score-CAM：</p>
+        <img class="Score-CAM" src="Score-CAM.png" alt="NDD 專案 Score-CAM">
+      </div>
+      <div class="qa-block">
+        <li><strong>問題：</strong>使用 Score-CAM 後觀察到模型並未關注指甲區域</li>
+        <li><strong>解決方式：</strong>執行人工標註流程，將資料圖片上傳至roboflow進行人工標示指甲區域後，下載yaml檔訓練YOLOV8模型，再以此模型將所有圖片資料重建，最後以重建後的圖片進行辨識模型訓練</li>
+      </div>
+      <div class="section">
+        <p>Roboflow人工標示：</p>
+        <img class="Roboflow" src="Roboflow.png" alt="NDD 專案 Roboflow">
+      </div>
+      <div class="qa-block">
+        <li><strong>問題：</strong>模型對特殊拍攝角度、亮度變化明顯等場景辨識效果不穩定</li>
+        <li><strong>解決方式：</strong>應用 Mixup 與 CutMix 進行資料擴增，強化模型泛化能力，並解決特定場景下的 overfitting 問題</li>
+      </div>
+      <div class="qa-block">
+        <li><strong>問題：</strong>開發中期模型表現不錯，有80%以上的準確率，但特定類別容易誤判</li>
+        <li><strong>解決方式：</strong>透過 Confusion Matrix 分析發現模型容易誤判末端黑色素瘤、杵狀指與凹陷指甲，針對這三類進行樣本補強</li>
+      </div>
+      <div class="section">
+        <p>Confusion Matrix：</p>
+        <img class="Confusion_Matrix" src="Confusion_Matrix.png" alt="NDD 專案 Confusion_Matrix">
+      </div>
+      <div class="qa-block">
+        <li><strong>問題：</strong>為了提高的模型可解釋性，需確實檢視模型判斷的依據</li>
+        <li><strong>解決方式：</strong>導入 SHAP 對輸入圖像遮罩分析，視覺化模型認為重要的影像區域，提升可信度與透明性</li>
+      </div>
+      <div class="section">
+        <p>SHAP：</p>
+        <img class="SHAP" src="SHAP.png" alt="NDD 專案 SHAP">
+      </div>
+      <div class="qa-block">
+        <li><strong>問題：</strong>實際用戶使用linebot上傳拍攝的照片，與處理好的圖片辨識準確率差異大</li>
+        <li><strong>解決方式：</strong>額外加入流程：將用戶上傳照片使用YOLOV8 Nano模型進行裁切只保留指甲位置，確保辨識模型關注正確區域</li>
+      </div>
+      <div class="qa-block">
+        <li><strong>問題：</strong>開發後期需要將準確率想辦法再向上提升</li>
+        <li><strong>解決方式：</strong>引入 CBAM 注意力模組強化模型特徵關注力，提升病灶區辨識準確性，分類評估結果平均95%，實測準確率上升至86%</li>
+      </div>
+      <div class="section">
+        <p>分類評估結果：</p>
+        <img class="Result" src="Result.png" alt="NDD 專案 Result">
+      </div>
+      <div class="section">
+        <p>實測準確率：</p>
+        <img class="Test" src="Test.png" alt="NDD 專案 Test">
+      </div>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>返回主頁</h2>
     <p><a href="https://meadow-sky-dfe.notion.site/Sean-AI-1ec37081de33803ea095efee6f45a142?pvs=4">← 返回 Notion 主頁</a></p>
   </div>
 </body>
