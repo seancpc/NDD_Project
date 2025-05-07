@@ -85,6 +85,14 @@
     <h2>開發歷程</h2>
     <ul>
       <div class="qa-block">
+        <li><strong>問題：</strong>專案整體架構規劃?</li>
+        <li><strong>解決方式：</strong>採用前後端分離架構，透過 AWS EC2 部署 Nginx 作為反向代理，並以 FastAPI + Uvicorn 建立 App Server，整合 YOLOv8 進行圖像裁切與 EfficientNetV2-M 進行分類推論，最終結果寫入 MySQL 資料庫。兼具可擴充性、非同步處理能力與佈署效率，適用於資源有限的即時 AI 應用場景。</li>
+      </div>
+      <div class="section">
+          <p>系統架構：</p>
+          <img class="System_Architecture" src="System_Architecture.png" alt="BP 專案 System_Architecture">
+      </div>
+      <div class="qa-block">
         <li><strong>問題：</strong>什麼樣的模型適合我的主題?</li>
         <li><strong>解決方式：</strong>EfficientNetV2 參數少、準確率高，訓練速度是其他模型 5～11 倍，效能最佳</li>
       </div>
