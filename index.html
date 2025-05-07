@@ -30,7 +30,7 @@
   </style>
 </head>
 <body>
-  <h1>🩺 指甲病變 AI 辨識系統（NDD 專案）</h1>
+  <h1>指甲病變 AI 辨識系統（NDD 專案）</h1>
 
   <div class="section">
     <h2>設計概念</h2>
@@ -85,8 +85,20 @@
     <h2>開發歷程</h2>
     <ul>
       <div class="qa-block">
+        <li><strong>問題：</strong>什麼樣的模型適合我的主題?</li>
+        <li><strong>解決方式：</strong>EfficientNetV2 參數少、準確率高，訓練速度是其他模型 5～11 倍，效能最佳</li>
+      </div>
+      <div class="section">
+        <p>EfficientNetV2：</p>
+        <img class="EfficientNetV2" src="EfficientNetV2.png" alt="NDD 專案 EfficientNetV2">
+      </div>
+      <div class="qa-block">
         <li><strong>問題：</strong>資料收集階段時發現現有包含健康指甲的21種照片中，有15種較罕見的病變照片數量小於30張</li>
         <li><strong>解決方式：</strong>將15種罕見病變整合成少見特殊病變分類，並將就醫科別指定為這15種病變較常看診的皮膚科</li>
+      </div>
+      <div class="section">
+        <p>常見與少見：</p>
+        <img class="Count" src="Count.png" alt="NDD 專案 Count">
       </div>
       <div class="qa-block">
         <li><strong>問題：</strong>整合後的七種類別的資料數量不平衡，模型傾向選擇數量多的常見病變而不是數量少的罕見病變</li>
