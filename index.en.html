@@ -26,7 +26,7 @@
   .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
   h1 { color: var(--heading); font-weight: bold; font-size: 2rem; margin: 0 0 0.3rem; }
   .subtitle { color: var(--text); font-size: 1.1rem; margin: 0; }
-  .lang { font-size: 0.9rem; margin: 0 0 1.2rem; }
+  .lang { text-align: right; font-size: 0.9rem; margin: 0 0 1.2rem; }
   .banner {
     background: #232323; border: 1px solid var(--border); border-radius: 6px;
     padding: 0.7rem 1rem; margin: 0.9rem 0 0; font-size: 0.9rem;
@@ -68,7 +68,7 @@
 
   <h1>Nail Disease Detection System (NDD Project)</h1>
   <p class="subtitle">YOLOv8 Cropping + EfficientNetV2-CBAM Classification, served via LineBot</p>
-  <div class="banner">Snap a photo, get a preliminary nail-lesion read · <strong>95% evaluation / 86% real-world accuracy</strong> · 1.5 s end-to-end inference · LineBot service live on AWS</div>
+  <div class="banner">Snap a photo, get a preliminary nail-lesion read · <strong>95% evaluation / 86% real-world accuracy</strong> · 1.5 s end-to-end inference · full-stack LineBot deployment on AWS</div>
 
   <p class="lead">
     Take a photo of a nail and send it to the LineBot — the system automatically crops the nail region,
@@ -86,10 +86,6 @@
 
   <h2>Overview</h2>
   <p>The project classifies nail-lesion photos: <strong>YOLOv8 Nano</strong> automatically crops the nail region, then an <strong>EfficientNetV2 + CBAM</strong> model classifies the lesion, and the result is returned through LineBot with reference advice.</p>
-
-  <h2>LineBot Demo</h2>
-  <img class="qr" src="qr_ndd.png" alt="NDD Project QR Code">
-  <p>→ Scan the QR code above to try the LineBot nail-classification flow.</p>
 
   <h2>System Architecture</h2>
   <pre>

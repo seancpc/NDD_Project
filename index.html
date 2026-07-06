@@ -26,7 +26,7 @@
   .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
   h1 { color: var(--heading); font-weight: bold; font-size: 2rem; margin: 0 0 0.3rem; }
   .subtitle { color: var(--text); font-size: 1.1rem; margin: 0; }
-  .lang { font-size: 0.9rem; margin: 0 0 1.2rem; }
+  .lang { text-align: right; font-size: 0.9rem; margin: 0 0 1.2rem; }
   .banner {
     background: #232323; border: 1px solid var(--border); border-radius: 6px;
     padding: 0.7rem 1rem; margin: 0.9rem 0 0; font-size: 0.9rem;
@@ -68,7 +68,7 @@
 
   <h1>指甲病變 AI 辨識系統（NDD 專案）</h1>
   <p class="subtitle">Nail Disease Detection — YOLOv8 Cropping + EfficientNetV2-CBAM, served via LineBot</p>
-  <div class="banner">拍照就能初步判讀指甲病變 · <strong>分類評估 95% / 真實場景實測 86%</strong> · 端到端推論 1.5 秒 · LineBot 線上服務（AWS）</div>
+  <div class="banner">拍照就能初步判讀指甲病變 · <strong>分類評估 95% / 真實場景實測 86%</strong> · 端到端推論 1.5 秒 · LineBot + AWS 全端部署</div>
 
   <p class="lead">
     用手機拍下指甲照片傳給 LineBot,系統自動裁切指甲區域、判別病變類型,並回傳<strong>初步判讀與就醫科別建議</strong>
@@ -84,10 +84,6 @@
 
   <h2>專案簡介</h2>
   <p>本專案針對指甲病變圖片進行分類:透過 <strong>YOLOv8 Nano</strong> 自動裁切指甲區域,接著使用 <strong>EfficientNetV2 + CBAM</strong> 模型進行病變判別,結果透過 LineBot 回傳診斷參考與建議。</p>
-
-  <h2>LineBot 體驗入口</h2>
-  <img class="qr" src="qr_ndd.png" alt="NDD 專案 QR Code">
-  <p>→ 掃描上方 QR Code,體驗 LineBot 指甲分類與建議流程。</p>
 
   <h2>系統架構</h2>
   <pre>
