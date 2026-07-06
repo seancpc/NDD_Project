@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nail Disease Detection System (NDD Project)</title>
+<style>
+  :root {
+    --bg: #1e1e1e;
+    --text: #e0e0e0;
+    --heading: #00bcd4;
+    --link: #58a6ff;
+    --code-bg: #2a2a2a;
+    --border: #333;
+    --muted: #9aa0a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, "Microsoft JhengHei", "PingFang TC", sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+  h1 { color: var(--heading); font-weight: bold; font-size: 2rem; margin: 0 0 0.3rem; }
+  .subtitle { color: var(--text); font-size: 1.1rem; margin: 0; }
+  .lang { font-size: 0.9rem; margin: 0 0 1.2rem; }
+  .banner {
+    background: #232323; border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.7rem 1rem; margin: 0.9rem 0 0; font-size: 0.9rem;
+  }
+  .banner strong { color: var(--heading); }
+  .lead {
+    background: #232323; border-left: 4px solid var(--heading);
+    border-radius: 0 6px 6px 0; padding: 1rem 1.1rem; margin: 1.6rem 0;
+  }
+  h2 { color: var(--heading); font-weight: bold; font-size: 1.5rem; margin: 2.5rem 0 0.8rem; }
+  h3 { color: #ffffff; font-weight: bold; font-size: 1.12rem; margin: 1.9rem 0 0.4rem; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  strong { color: #ffffff; }
+  ul { padding-left: 1.4rem; margin: 0.7rem 0; }
+  li { margin: 0.4rem 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.95rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.8rem; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); white-space: nowrap; }
+  pre {
+    background: var(--code-bg); padding: 1rem; border-radius: 6px;
+    overflow-x: auto; font-size: 0.78rem; line-height: 1.45;
+    font-family: Consolas, monospace; color: var(--text);
+  }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 90%; }
+  .qr { width: 200px; border: 1px solid var(--border); border-radius: 6px; }
+  img.shot { max-width: 760px; width: 100%; border: 1px solid var(--border); border-radius: 6px; }
+  .caption { font-size: 0.85rem; color: var(--muted); }
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 0.95rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <p class="lang">English ｜ <a href="index.html">繁體中文</a></p>
+
+  <h1>Nail Disease Detection System (NDD Project)</h1>
+  <p class="subtitle">YOLOv8 Cropping + EfficientNetV2-CBAM Classification, served via LineBot</p>
+  <div class="banner">Snap a photo, get a preliminary nail-lesion read · <strong>95% evaluation / 86% real-world accuracy</strong> · 1.5 s end-to-end inference · LineBot service live on AWS</div>
+
+  <p class="lead">
+    Take a photo of a nail and send it to the LineBot — the system automatically crops the nail region,
+    classifies the lesion type, and replies with a <strong>preliminary read plus a recommended medical specialty</strong>,
+    helping users who cannot easily visit a clinic assess risk earlier and reduce delayed care.
+    (For reference only; not a medical diagnostic tool.)
+  </p>
+
+  <h2>Design Concept</h2>
+  <ul>
+    <li>Help users make a preliminary assessment of nail lesions.</li>
+    <li>Reduce delays in seeking care and improve treatment efficiency.</li>
+    <li>Target general users who cannot easily visit a clinic or want an early risk estimate.</li>
+  </ul>
+
+  <h2>Overview</h2>
+  <p>The project classifies nail-lesion photos: <strong>YOLOv8 Nano</strong> automatically crops the nail region, then an <strong>EfficientNetV2 + CBAM</strong> model classifies the lesion, and the result is returned through LineBot with reference advice.</p>
+
+  <h2>LineBot Demo</h2>
+  <img class="qr" src="qr_ndd.png" alt="NDD Project QR Code">
+  <p>→ Scan the QR code above to try the LineBot nail-classification flow.</p>
+
+  <h2>System Architecture</h2>
+  <pre>
+   User uploads a nail photo via LineBot
+            │
+            ▼
+   Nginx reverse proxy (AWS EC2)
+            │
+            ▼
+   FastAPI + Uvicorn app server
+            │
+            ▼
+   YOLOv8 Nano auto-crops the nail      ← keeps only the nail, drops fingers/background
+            │
+            ▼
+   EfficientNetV2-M + CBAM classifier   ← lesion-type classification
+            │
+            ▼
+   MySQL (AWS RDS) records the result
+            │
+            ▼
+   LineBot FlexMessage returns the read + recommended specialty</pre>
+  <img class="shot" src="System_Architecture.png" alt="NDD system architecture">
+  <p class="caption">Architecture: front/back-end separation — Nginx reverse proxy + FastAPI inference service + MySQL records.</p>
+
+  <h2>Tech Stack</h2>
+  <table>
+    <tr><th>Category</th><th>Stack</th></tr>
+    <tr><td>Nail detection</td><td>YOLOv8 Nano (auto-cropping, &lt; 200 ms average)</td></tr>
+    <tr><td>Lesion classification</td><td>EfficientNetV2 + CBAM attention module</td></tr>
+    <tr><td>Training framework</td><td>PyTorch (Focal Loss, Mixup / CutMix augmentation)</td></tr>
+    <tr><td>Interpretability</td><td>Score-CAM, SHAP, Confusion-Matrix error analysis</td></tr>
+    <tr><td>Backend deployment</td><td>FastAPI + Uvicorn + Nginx on AWS EC2 / RDS (MySQL)</td></tr>
+    <tr><td>Interface</td><td>LineBot + FlexMessage</td></tr>
+  </table>
+
+  <h2>Results</h2>
+  <ul>
+    <li><strong>Average evaluation accuracy 95%; real-world accuracy 86%</strong> (user smartphone photos).</li>
+    <li>YOLOv8 cropping averages &lt; 200 ms; total end-to-end inference ≈ 1.5 seconds.</li>
+    <li>Stored records can be extended into personal diagnostic history and tracking.</li>
+  </ul>
+
+  <h2>Future Extensions</h2>
+  <ul>
+    <li>Add nearby-clinic navigation after commercialization.</li>
+    <li>With user consent, build personal medical records to track changes over time.</li>
+    <li>Extend to other appearance-based medical recognition: skin lesions, wound care, etc.</li>
+  </ul>
+
+  <h2>Engineering Trail</h2>
+  <p>The development was not a straight line of successes but a chain of "problem → verify → fix". Key milestones:</p>
+
+  <h3>① How to plan the overall architecture?</h3>
+  <p><strong>Solution</strong>: front/back-end separation — Nginx as a reverse proxy on AWS EC2, FastAPI + Uvicorn as the app server, YOLOv8 for image cropping and EfficientNetV2-M for classification, results written to MySQL. Extensible, async-capable, and efficient to deploy — suitable for real-time AI on limited resources (diagram in "System Architecture" above).</p>
+
+  <h3>② Which model fits this task?</h3>
+  <p><strong>Solution</strong>: EfficientNetV2 — fewer parameters, higher accuracy, and 5–11× faster training than the alternatives.</p>
+  <img class="shot" src="EfficientNetV2.png" alt="EfficientNetV2 model comparison">
+  <p class="caption">EfficientNetV2 vs. other models: parameters / accuracy.</p>
+
+  <h3>③ Fifteen rare lesion types with fewer than 30 photos each — now what?</h3>
+  <p><strong>Solution</strong>: during data collection, 15 of the 21 classes (including healthy nails) had &lt; 30 samples. They were merged into a single "rare/special lesion" class, and its recommended specialty was set to dermatology — where these lesions are most commonly seen.</p>
+  <img class="shot" src="Count.png" alt="Common vs. rare class distribution">
+  <p class="caption">Sample counts of common vs. rare lesion classes.</p>
+
+  <h3>④ The merged 7 classes were still imbalanced — the model favored the majority</h3>
+  <p><strong>Solution</strong>: Focal Loss to up-weight minority classes, preventing the majority classes from dominating the loss.</p>
+
+  <h3>⑤ Is the model actually looking at the nail?</h3>
+  <p><strong>Solution</strong>: Score-CAM visualization of the model's attention — verifying whether decisions were based on the nail lesion rather than fingers or background.</p>
+  <img class="shot" src="Score-CAM.png" alt="Score-CAM attention visualization">
+  <p class="caption">Score-CAM: visualizing where the model looks.</p>
+
+  <h3>⑥ Score-CAM revealed the model was NOT looking at the nail!</h3>
+  <p><strong>Solution</strong>: a manual annotation pipeline — upload the dataset to Roboflow, hand-label nail regions, train a YOLOv8 model on those labels, rebuild the entire dataset with nail-only crops, and retrain the classifier on the rebuilt images.</p>
+  <img class="shot" src="Roboflow.png" alt="Roboflow manual annotation">
+  <p class="caption">Roboflow manual labeling of nail regions.</p>
+
+  <h3>⑦ Unstable recognition under unusual angles and lighting</h3>
+  <p><strong>Solution</strong>: Mixup and CutMix data augmentation to strengthen generalization and fix scenario-specific overfitting.</p>
+
+  <h3>⑧ Above 80% accuracy, but specific classes still confused</h3>
+  <p><strong>Solution</strong>: Confusion-Matrix analysis showed frequent confusion among acral melanoma, clubbing, and nail pitting — targeted sample reinforcement for those three classes.</p>
+  <img class="shot" src="Confusion_Matrix.png" alt="Confusion Matrix error analysis">
+  <p class="caption">Confusion Matrix: locating the most-confused class pairs.</p>
+
+  <h3>⑨ How to inspect the model's evidence and improve explainability?</h3>
+  <p><strong>Solution</strong>: SHAP masking analysis on input images, visualizing pixel-level importance to increase trust and transparency.</p>
+  <img class="shot" src="SHAP.png" alt="SHAP importance visualization">
+  <p class="caption">SHAP: pixel-level importance visualization.</p>
+
+  <h3>⑩ Real user photos performed far worse than curated images</h3>
+  <p><strong>Solution</strong>: added a preprocessing step — every user upload is first cropped by YOLOv8 Nano to keep only the nail region, ensuring the classifier sees the right area.</p>
+
+  <h3>⑪ Late-stage: how to push accuracy further?</h3>
+  <p><strong>Solution</strong>: integrated the CBAM attention module to sharpen feature focus on lesion regions — average evaluation accuracy reached <strong>95%</strong>, real-world accuracy rose to <strong>86%</strong>.</p>
+  <img class="shot" src="Result.png" alt="Evaluation results">
+  <p class="caption">Evaluation results (95% average).</p>
+  <img class="shot" src="Test.png" alt="Real-world test accuracy">
+  <p class="caption">Real-world test accuracy (86%).</p>
+
+  <footer>
+    <a href="https://meadow-sky-dfe.notion.site/Sean-Chuang-AI-1ec37081de33803ea095efee6f45a142">← Back to Portfolio</a>
+  </footer>
+
+</div>
+</body>
+</html>

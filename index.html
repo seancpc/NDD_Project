@@ -1,183 +1,199 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>指甲病變辨識系統（NDD 專案）</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 2rem;
-      line-height: 1.6;
-/*       dark mode */
-      background-color: #1e1e1e;
-      color: #e0e0e0;
-    }
-    h1, h2 {
-      color: #00bcd4;
-      font-weight: bold;
-/*       color: #2c3e50; */
-    }
-    .qr {
-      width: 200px;
-    }
-    .section {
-      margin-bottom: 2rem;
-    }
-    a {
-    color: #58a6ff;
-    }
-/*     a {
-      color: #0077cc;
-    } */
-    .qa-block {
-      margin-bottom: 2em;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>指甲病變 AI 辨識系統（NDD 專案）</title>
+<style>
+  :root {
+    --bg: #1e1e1e;
+    --text: #e0e0e0;
+    --heading: #00bcd4;
+    --link: #58a6ff;
+    --code-bg: #2a2a2a;
+    --border: #333;
+    --muted: #9aa0a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, "Microsoft JhengHei", "PingFang TC", sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  .container { max-width: 800px; margin: 0 auto; padding: 2rem; }
+  h1 { color: var(--heading); font-weight: bold; font-size: 2rem; margin: 0 0 0.3rem; }
+  .subtitle { color: var(--text); font-size: 1.1rem; margin: 0; }
+  .lang { font-size: 0.9rem; margin: 0 0 1.2rem; }
+  .banner {
+    background: #232323; border: 1px solid var(--border); border-radius: 6px;
+    padding: 0.7rem 1rem; margin: 0.9rem 0 0; font-size: 0.9rem;
+  }
+  .banner strong { color: var(--heading); }
+  .lead {
+    background: #232323; border-left: 4px solid var(--heading);
+    border-radius: 0 6px 6px 0; padding: 1rem 1.1rem; margin: 1.6rem 0;
+  }
+  h2 { color: var(--heading); font-weight: bold; font-size: 1.5rem; margin: 2.5rem 0 0.8rem; }
+  h3 { color: #ffffff; font-weight: bold; font-size: 1.12rem; margin: 1.9rem 0 0.4rem; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  strong { color: #ffffff; }
+  ul { padding-left: 1.4rem; margin: 0.7rem 0; }
+  li { margin: 0.4rem 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: 0.95rem; }
+  th, td { border: 1px solid var(--border); padding: 0.5rem 0.8rem; text-align: left; vertical-align: top; }
+  th { background: var(--code-bg); white-space: nowrap; }
+  pre {
+    background: var(--code-bg); padding: 1rem; border-radius: 6px;
+    overflow-x: auto; font-size: 0.78rem; line-height: 1.45;
+    font-family: Consolas, monospace; color: var(--text);
+  }
+  code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 90%; }
+  .qr { width: 200px; border: 1px solid var(--border); border-radius: 6px; }
+  img.shot { max-width: 760px; width: 100%; border: 1px solid var(--border); border-radius: 6px; }
+  .caption { font-size: 0.85rem; color: var(--muted); }
+  footer {
+    margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--border);
+    color: var(--muted); font-size: 0.95rem;
+  }
+</style>
 </head>
 <body>
+<div class="container">
+
+  <p class="lang"><a href="index.en.html">English</a> ｜ 繁體中文</p>
+
   <h1>指甲病變 AI 辨識系統（NDD 專案）</h1>
+  <p class="subtitle">Nail Disease Detection — YOLOv8 Cropping + EfficientNetV2-CBAM, served via LineBot</p>
+  <div class="banner">拍照就能初步判讀指甲病變 · <strong>分類評估 95% / 真實場景實測 86%</strong> · 端到端推論 1.5 秒 · LineBot 線上服務（AWS）</div>
 
-  <div class="section">
-    <h2>設計概念</h2>
-    <ul>
-      <li>幫助使用者初步判斷指甲病變情況</li>
-      <li>減少延遲就醫時間，提高治療效率</li>
-      <li>針對不方便就醫或想先評估風險的一般用戶</li>
-    </ul>
-  </div>
+  <p class="lead">
+    用手機拍下指甲照片傳給 LineBot,系統自動裁切指甲區域、判別病變類型,並回傳<strong>初步判讀與就醫科別建議</strong>
+    —— 幫助不方便就醫或想先評估風險的使用者,減少延遲就醫時間。（輔助參考性質,非醫療診斷工具）
+  </p>
 
-  <div class="section">
-    <h2>專案簡介</h2>
-    <p>本專案針對指甲病變圖片進行分類，透過 YOLOv8 Nano 自動裁切指甲區域，接著使用 EfficientNetV2 + CBAM 模型進行病變判別，結果透過 LineBot 回傳診斷與建議。</p>
-  </div>
+  <h2>設計概念</h2>
+  <ul>
+    <li>幫助使用者初步判斷指甲病變情況</li>
+    <li>減少延遲就醫時間,提高治療效率</li>
+    <li>針對不方便就醫或想先評估風險的一般用戶</li>
+  </ul>
 
-  <div class="section">
-    <h2>LineBot 體驗入口</h2>
-    <img class="qr" src="qr_ndd.png" alt="NDD 專案 QR Code">
-    <p>→ 掃描上方 QR Code，體驗 LineBot 指甲分類與建議流程。</p>
-  </div>
+  <h2>專案簡介</h2>
+  <p>本專案針對指甲病變圖片進行分類:透過 <strong>YOLOv8 Nano</strong> 自動裁切指甲區域,接著使用 <strong>EfficientNetV2 + CBAM</strong> 模型進行病變判別,結果透過 LineBot 回傳診斷參考與建議。</p>
 
-  <div class="section">
-    <h2>使用技術</h2>
-    <ul>
-      <li>指甲偵測模型：YOLOv8 Nano</li>
-      <li>病變分類模型：EfficientNetV2 + CBAM</li>
-      <li>模型訓練框架：PyTorch</li>
-      <li>佈署：FastAPI + MySQL，架設於 AWS EC2 / RDS</li>
-      <li>UI：LineBot + FlexMessage</li>
-    </ul>
-  </div>
+  <h2>LineBot 體驗入口</h2>
+  <img class="qr" src="qr_ndd.png" alt="NDD 專案 QR Code">
+  <p>→ 掃描上方 QR Code,體驗 LineBot 指甲分類與建議流程。</p>
 
-  <div class="section">
-    <h2>成效亮點</h2>
-    <ul>
-      <li>分類準確率：約 86%</li>
-      <li>YOLOv8 裁切平均耗時 < 200ms，推論總時間 1.5 秒</li>
-      <li>資料記錄可擴充為個人診斷歷史與追蹤系統</li>
-    </ul>
-  </div>
+  <h2>系統架構</h2>
+  <pre>
+   用戶 LineBot 上傳指甲照片
+            │
+            ▼
+   Nginx 反向代理(AWS EC2)
+            │
+            ▼
+   FastAPI + Uvicorn App Server
+            │
+            ▼
+   YOLOv8 Nano 自動裁切指甲區域      ← 只保留指甲,排除手指與背景
+            │
+            ▼
+   EfficientNetV2-M + CBAM 分類      ← 病變類別判別
+            │
+            ▼
+   MySQL(AWS RDS)紀錄結果
+            │
+            ▼
+   LineBot FlexMessage 回傳判讀 + 就醫科別建議</pre>
+  <img class="shot" src="System_Architecture.png" alt="NDD 專案系統架構圖">
+  <p class="caption">系統架構:前後端分離,Nginx 反向代理 + FastAPI 推論服務 + MySQL 紀錄。</p>
 
-  <div class="section">
-    <h2>未來可擴展性</h2>
-    <ul>
-      <li>專案商業化後可再加入附近診所導航功能</li>
-      <li>取得用戶同意後可以建立個人病歷紀錄追蹤變化</li>
-      <li>擴充應用範圍至皮膚病變、傷口照護等外觀醫療辨識</li>
-    </ul>
-  </div>
+  <h2>使用技術</h2>
+  <table>
+    <tr><th>類別</th><th>技術堆疊</th></tr>
+    <tr><td>指甲偵測</td><td>YOLOv8 Nano(自動裁切指甲區域,平均 &lt; 200ms)</td></tr>
+    <tr><td>病變分類</td><td>EfficientNetV2 + CBAM 注意力模組</td></tr>
+    <tr><td>訓練框架</td><td>PyTorch(Focal Loss、Mixup / CutMix 資料擴增)</td></tr>
+    <tr><td>可解釋性</td><td>Score-CAM、SHAP、Confusion Matrix 錯誤分析</td></tr>
+    <tr><td>後端部署</td><td>FastAPI + Uvicorn + Nginx,架設於 AWS EC2 / RDS(MySQL)</td></tr>
+    <tr><td>介面</td><td>LineBot + FlexMessage</td></tr>
+  </table>
 
-  <div class="section">
-    <h2>開發歷程</h2>
-    <ul>
-      <div class="qa-block">
-        <li><strong>問題：</strong>專案整體架構規劃?</li>
-        <li><strong>解決方式：</strong>採用前後端分離架構，透過 AWS EC2 部署 Nginx 作為反向代理，並以 FastAPI + Uvicorn 建立 App Server，整合 YOLOv8 進行圖像裁切與 EfficientNetV2-M 進行分類推論，最終結果寫入 MySQL 資料庫。兼具可擴充性、非同步處理能力與佈署效率，適用於資源有限的即時 AI 應用場景。</li>
-      </div>
-      <div class="section">
-          <p>系統架構：</p>
-          <img class="System_Architecture" src="System_Architecture.png" alt="BP 專案 System_Architecture">
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>什麼樣的模型適合我的主題?</li>
-        <li><strong>解決方式：</strong>EfficientNetV2 參數少、準確率高，訓練速度是其他模型 5～11 倍，效能最佳</li>
-      </div>
-      <div class="section">
-        <p>EfficientNetV2：</p>
-        <img class="EfficientNetV2" src="EfficientNetV2.png" alt="NDD 專案 EfficientNetV2">
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>資料收集階段時發現現有包含健康指甲的21種照片中，有15種較罕見的病變照片數量小於30張</li>
-        <li><strong>解決方式：</strong>將15種罕見病變整合成少見特殊病變分類，並將就醫科別指定為這15種病變較常看診的皮膚科</li>
-      </div>
-      <div class="section">
-        <p>常見與少見：</p>
-        <img class="Count" src="Count.png" alt="NDD 專案 Count">
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>整合後的七種類別的資料數量不平衡，模型傾向選擇數量多的常見病變而不是數量少的罕見病變</li>
-        <li><strong>解決方式：</strong>使用 Focal Loss 對少數類別加大權重，減少多數類別主導 loss 的情況</li>
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>為了再向上提升模型準確率，需確認模型是否真的辨識到正確區域</li>
-        <li><strong>解決方式：</strong>透過 Score-CAM 顯示模型關注的區域，確認其判斷是基於指甲病變，而不是手指背景</li>
-      </div>
-      <div class="section">
-        <p>Score-CAM：</p>
-        <img class="Score-CAM" src="Score-CAM.png" alt="NDD 專案 Score-CAM">
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>使用 Score-CAM 後觀察到模型並未關注指甲區域</li>
-        <li><strong>解決方式：</strong>執行人工標註流程，將資料圖片上傳至roboflow進行人工標示指甲區域後，下載yaml檔訓練YOLOV8模型，再以此模型將所有圖片資料重建，最後以重建後的圖片進行辨識模型訓練</li>
-      </div>
-      <div class="section">
-        <p>Roboflow人工標示：</p>
-        <img class="Roboflow" src="Roboflow.png" alt="NDD 專案 Roboflow">
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>模型對特殊拍攝角度、亮度變化明顯等場景辨識效果不穩定</li>
-        <li><strong>解決方式：</strong>應用 Mixup 與 CutMix 進行資料擴增，強化模型泛化能力，並解決特定場景下的 overfitting 問題</li>
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>開發中期模型表現不錯，有80%以上的準確率，但特定類別容易誤判</li>
-        <li><strong>解決方式：</strong>透過 Confusion Matrix 分析發現模型容易誤判末端黑色素瘤、杵狀指與凹陷指甲，針對這三類進行樣本補強</li>
-      </div>
-      <div class="section">
-        <p>Confusion Matrix：</p>
-        <img class="Confusion_Matrix" src="Confusion_Matrix.png" alt="NDD 專案 Confusion_Matrix">
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>為了提高的模型可解釋性，需確實檢視模型判斷的依據</li>
-        <li><strong>解決方式：</strong>導入 SHAP 對輸入圖像遮罩分析，視覺化模型認為重要的影像區域，提升可信度與透明性</li>
-      </div>
-      <div class="section">
-        <p>SHAP：</p>
-        <img class="SHAP" src="SHAP.png" alt="NDD 專案 SHAP">
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>實際用戶使用linebot上傳拍攝的照片，與處理好的圖片辨識準確率差異大</li>
-        <li><strong>解決方式：</strong>額外加入流程：將用戶上傳照片使用YOLOV8 Nano模型進行裁切只保留指甲位置，確保辨識模型關注正確區域</li>
-      </div>
-      <div class="qa-block">
-        <li><strong>問題：</strong>開發後期需要將準確率想辦法再向上提升</li>
-        <li><strong>解決方式：</strong>引入 CBAM 注意力模組強化模型特徵關注力，提升病灶區辨識準確性，分類評估結果平均95%，實測準確率上升至86%</li>
-      </div>
-      <div class="section">
-        <p>分類評估結果：</p>
-        <img class="Result" src="Result.png" alt="NDD 專案 Result">
-      </div>
-      <div class="section">
-        <p>實測準確率：</p>
-        <img class="Test" src="Test.png" alt="NDD 專案 Test">
-      </div>
-    </ul>
-  </div>
+  <h2>成效亮點</h2>
+  <ul>
+    <li><strong>分類評估準確率平均 95%,真實場景實測 86%</strong>(用戶手機實拍照片)。</li>
+    <li>YOLOv8 裁切平均耗時 &lt; 200ms,端到端推論總時間約 1.5 秒。</li>
+    <li>資料記錄可擴充為個人診斷歷史與追蹤系統。</li>
+  </ul>
 
-  <div class="section">
-    <h2>返回主頁</h2>
-    <p><a href="https://meadow-sky-dfe.notion.site/Sean-AI-1ec37081de33803ea095efee6f45a142?pvs=4">← 返回 Notion 主頁</a></p>
-  </div>
+  <h2>未來可擴展性</h2>
+  <ul>
+    <li>專案商業化後可再加入附近診所導航功能。</li>
+    <li>取得用戶同意後可建立個人病歷紀錄、追蹤變化。</li>
+    <li>擴充應用範圍至皮膚病變、傷口照護等外觀醫療辨識。</li>
+  </ul>
+
+  <h2>開發歷程</h2>
+  <p>開發過程不是「一路成功」,而是一連串「遇到問題 → 驗證 → 修正」。以下是幾個關鍵節點:</p>
+
+  <h3>① 專案整體架構怎麼規劃?</h3>
+  <p><strong>解決方式</strong>:採用前後端分離架構,透過 AWS EC2 部署 Nginx 作為反向代理,並以 FastAPI + Uvicorn 建立 App Server,整合 YOLOv8 進行圖像裁切與 EfficientNetV2-M 進行分類推論,最終結果寫入 MySQL 資料庫。兼具可擴充性、非同步處理能力與佈署效率,適用於資源有限的即時 AI 應用場景(架構圖見上方「系統架構」)。</p>
+
+  <h3>② 什麼樣的模型適合這個主題?</h3>
+  <p><strong>解決方式</strong>:EfficientNetV2 參數少、準確率高,訓練速度是其他模型 5～11 倍,效能最佳。</p>
+  <img class="shot" src="EfficientNetV2.png" alt="EfficientNetV2 模型比較">
+  <p class="caption">EfficientNetV2 與其他模型的參數量 / 準確率比較。</p>
+
+  <h3>③ 15 種罕見病變的照片各不到 30 張,怎麼辦?</h3>
+  <p><strong>解決方式</strong>:資料收集階段發現,含健康指甲的 21 種類別中有 15 種罕見病變樣本數 &lt; 30 張。將這 15 種整合為「少見特殊病變」單一分類,並將就醫科別指定為這些病變較常看診的皮膚科。</p>
+  <img class="shot" src="Count.png" alt="常見與少見病變資料分布">
+  <p class="caption">常見與少見病變的樣本數分布。</p>
+
+  <h3>④ 整合後 7 類資料仍不平衡,模型偏向多數類</h3>
+  <p><strong>解決方式</strong>:使用 Focal Loss 對少數類別加大權重,減少多數類別主導 loss 的情況。</p>
+
+  <h3>⑤ 模型真的在看「指甲」嗎?</h3>
+  <p><strong>解決方式</strong>:透過 Score-CAM 顯示模型關注的區域,檢驗其判斷是基於指甲病變,而不是手指背景。</p>
+  <img class="shot" src="Score-CAM.png" alt="Score-CAM 注意力視覺化">
+  <p class="caption">Score-CAM 視覺化模型關注區域。</p>
+
+  <h3>⑥ Score-CAM 顯示模型並未關注指甲區域!</h3>
+  <p><strong>解決方式</strong>:執行人工標註流程 —— 將資料圖片上傳至 Roboflow 人工標示指甲區域,以標註結果訓練 YOLOv8 模型,再用此模型將所有圖片資料重建(只保留指甲區域),最後以重建後的圖片重新訓練辨識模型。</p>
+  <img class="shot" src="Roboflow.png" alt="Roboflow 人工標註">
+  <p class="caption">Roboflow 人工標示指甲區域。</p>
+
+  <h3>⑦ 特殊拍攝角度、亮度變化下辨識不穩定</h3>
+  <p><strong>解決方式</strong>:應用 Mixup 與 CutMix 進行資料擴增,強化模型泛化能力,並解決特定場景下的 overfitting 問題。</p>
+
+  <h3>⑧ 準確率 80%+ 之後,特定類別仍容易誤判</h3>
+  <p><strong>解決方式</strong>:透過 Confusion Matrix 分析,發現模型容易誤判末端黑色素瘤、杵狀指與凹陷指甲,針對這三類進行樣本補強。</p>
+  <img class="shot" src="Confusion_Matrix.png" alt="Confusion Matrix 錯誤分析">
+  <p class="caption">Confusion Matrix:定位最容易互相誤判的類別。</p>
+
+  <h3>⑨ 如何檢視模型判斷的依據、提高可解釋性?</h3>
+  <p><strong>解決方式</strong>:導入 SHAP 對輸入圖像做遮罩分析,視覺化模型認為重要的影像區域,提升可信度與透明性。</p>
+  <img class="shot" src="SHAP.png" alt="SHAP 重要區域視覺化">
+  <p class="caption">SHAP:像素層級的重要性視覺化。</p>
+
+  <h3>⑩ 用戶實拍照片的準確率與處理好的圖片落差大</h3>
+  <p><strong>解決方式</strong>:額外加入前處理流程 —— 用戶上傳照片先經 YOLOv8 Nano 裁切、只保留指甲位置,確保辨識模型關注正確區域。</p>
+
+  <h3>⑪ 開發後期,準確率如何再向上突破?</h3>
+  <p><strong>解決方式</strong>:引入 CBAM 注意力模組強化模型特徵關注力,提升病灶區辨識準確性 —— 分類評估結果平均 <strong>95%</strong>,實測準確率上升至 <strong>86%</strong>。</p>
+  <img class="shot" src="Result.png" alt="分類評估結果">
+  <p class="caption">分類評估結果(平均 95%)。</p>
+  <img class="shot" src="Test.png" alt="實測準確率">
+  <p class="caption">真實場景實測準確率(86%)。</p>
+
+  <footer>
+    <a href="https://meadow-sky-dfe.notion.site/Sean-Chuang-AI-1ec37081de33803ea095efee6f45a142">← 返回作品集主頁</a>
+  </footer>
+
+</div>
 </body>
 </html>
