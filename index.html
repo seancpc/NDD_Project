@@ -52,6 +52,15 @@
     font-family: Consolas, monospace; color: var(--text);
   }
   code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 90%; }
+  .btns { display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1.1rem 0; }
+  .btn {
+    display: inline-block; padding: 0.6rem 1.1rem;
+    border: 1px solid var(--link); border-radius: 6px;
+    color: var(--link); font-size: 0.95rem; font-weight: 500;
+  }
+  .btn:hover { background: var(--link); color: var(--bg); text-decoration: none; }
+  .btn.primary { background: var(--heading); border-color: var(--heading); color: var(--bg); }
+  .btn.primary:hover { opacity: 0.85; color: var(--bg); }
   .qr { width: 200px; border: 1px solid var(--border); border-radius: 6px; }
   img.shot { max-width: 760px; width: 100%; border: 1px solid var(--border); border-radius: 6px; }
   .caption { font-size: 0.85rem; color: var(--muted); }
@@ -74,6 +83,10 @@
     用手機拍下指甲照片傳給 LineBot,系統自動裁切指甲區域、判別病變類型,並回傳<strong>初步判讀與就醫科別建議</strong>
     —— 幫助不方便就醫或想先評估風險的使用者,減少延遲就醫時間。（輔助參考性質,非醫療診斷工具）
   </p>
+
+  <div class="btns">
+    <a class="btn primary" href="https://github.com/seancpc/NDD_Project">GitHub Repo</a>
+  </div>
 
   <h2>設計概念</h2>
   <ul>
@@ -99,7 +112,7 @@
    YOLOv8 Nano 自動裁切指甲區域      ← 只保留指甲,排除手指與背景
             │
             ▼
-   EfficientNetV2-M + CBAM 分類      ← 病變類別判別
+   EfficientNetV2-M + CBAM 分類(ONNX) ← 病變類別判別
             │
             ▼
    MySQL(AWS RDS)紀錄結果
@@ -127,7 +140,7 @@
     <li>資料記錄可擴充為個人診斷歷史與追蹤系統。</li>
   </ul>
 
-  <h2>未來可擴展性</h2>
+  <h2>範圍與後續</h2>
   <ul>
     <li>專案商業化後可再加入附近診所導航功能。</li>
     <li>取得用戶同意後可建立個人病歷紀錄、追蹤變化。</li>
@@ -141,7 +154,7 @@
   <p><strong>解決方式</strong>:採用前後端分離架構,透過 AWS EC2 部署 Nginx 作為反向代理,並以 FastAPI + Uvicorn 建立 App Server,整合 YOLOv8 進行圖像裁切與 EfficientNetV2-M 進行分類推論,最終結果寫入 MySQL 資料庫。兼具可擴充性、非同步處理能力與佈署效率,適用於資源有限的即時 AI 應用場景(架構圖見上方「系統架構」)。</p>
 
   <h3>② 什麼樣的模型適合這個主題?</h3>
-  <p><strong>解決方式</strong>:EfficientNetV2 參數少、準確率高,訓練速度是其他模型 5～11 倍,效能最佳。</p>
+  <p><strong>解決方式</strong>:根據 EfficientNetV2 論文,此模型參數少、準確率高,訓練速度可達其他模型的 5～11 倍,因此選用。</p>
   <img class="shot" src="EfficientNetV2.png" alt="EfficientNetV2 模型比較">
   <p class="caption">EfficientNetV2 與其他模型的參數量 / 準確率比較。</p>
 
