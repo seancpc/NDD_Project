@@ -52,6 +52,15 @@
     font-family: Consolas, monospace; color: var(--text);
   }
   code { background: var(--code-bg); padding: 1px 5px; border-radius: 3px; font-size: 90%; }
+  .btns { display: flex; gap: 0.8rem; flex-wrap: wrap; margin: 1.1rem 0; }
+  .btn {
+    display: inline-block; padding: 0.6rem 1.1rem;
+    border: 1px solid var(--link); border-radius: 6px;
+    color: var(--link); font-size: 0.95rem; font-weight: 500;
+  }
+  .btn:hover { background: var(--link); color: var(--bg); text-decoration: none; }
+  .btn.primary { background: var(--heading); border-color: var(--heading); color: var(--bg); }
+  .btn.primary:hover { opacity: 0.85; color: var(--bg); }
   .qr { width: 200px; border: 1px solid var(--border); border-radius: 6px; }
   img.shot { max-width: 760px; width: 100%; border: 1px solid var(--border); border-radius: 6px; }
   .caption { font-size: 0.85rem; color: var(--muted); }
@@ -77,6 +86,10 @@
     (For reference only; not a medical diagnostic tool.)
   </p>
 
+  <div class="btns">
+    <a class="btn primary" href="https://github.com/seancpc/NDD_Project">GitHub Repo</a>
+  </div>
+
   <h2>Design Concept</h2>
   <ul>
     <li>Help users make a preliminary assessment of nail lesions.</li>
@@ -98,10 +111,10 @@
    FastAPI + Uvicorn app server
             │
             ▼
-   YOLOv8 Nano auto-crops the nail      ← keeps only the nail, drops fingers/background
+   YOLOv8 Nano auto-crops the nail             ← keeps only the nail, drops fingers/background
             │
             ▼
-   EfficientNetV2-M + CBAM classifier   ← lesion-type classification
+   EfficientNetV2-M + CBAM classifier (ONNX)   ← lesion-type classification
             │
             ▼
    MySQL (AWS RDS) records the result
@@ -122,28 +135,28 @@
     <tr><td>Interface</td><td>LineBot + FlexMessage</td></tr>
   </table>
 
-  <h2>Results</h2>
+  <h2>Key Results</h2>
   <ul>
     <li><strong>Average evaluation accuracy 95%; real-world accuracy 86%</strong> (user smartphone photos).</li>
     <li>YOLOv8 cropping averages &lt; 200 ms; total end-to-end inference ≈ 1.5 seconds.</li>
     <li>Stored records can be extended into personal diagnostic history and tracking.</li>
   </ul>
 
-  <h2>Future Extensions</h2>
+  <h2>Scope &amp; Next</h2>
   <ul>
     <li>Add nearby-clinic navigation after commercialization.</li>
     <li>With user consent, build personal medical records to track changes over time.</li>
     <li>Extend to other appearance-based medical recognition: skin lesions, wound care, etc.</li>
   </ul>
 
-  <h2>Engineering Trail</h2>
+  <h2>Development Journey</h2>
   <p>The development was not a straight line of successes but a chain of "problem → verify → fix". Key milestones:</p>
 
   <h3>① How to plan the overall architecture?</h3>
   <p><strong>Solution</strong>: front/back-end separation — Nginx as a reverse proxy on AWS EC2, FastAPI + Uvicorn as the app server, YOLOv8 for image cropping and EfficientNetV2-M for classification, results written to MySQL. Extensible, async-capable, and efficient to deploy — suitable for real-time AI on limited resources (diagram in "System Architecture" above).</p>
 
   <h3>② Which model fits this task?</h3>
-  <p><strong>Solution</strong>: EfficientNetV2 — fewer parameters, higher accuracy, and 5–11× faster training than the alternatives.</p>
+  <p><strong>Solution</strong>: According to the EfficientNetV2 paper, it has fewer parameters and higher accuracy, with up to 5–11× faster training than alternatives, so it was chosen.</p>
   <img class="shot" src="EfficientNetV2.png" alt="EfficientNetV2 model comparison">
   <p class="caption">EfficientNetV2 vs. other models: parameters / accuracy.</p>
 
